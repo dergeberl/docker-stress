@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress
+spec:
+  selector:
+    matchLabels:
+      app: stress
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: stress
+    spec:
+      containers:
+      - name: stress
+        image: dergeberl/stress
+        resources:
+          limits:
+            cpu: "1"
+          requests:
+            cpu: "0.5"
+        env:
+        - name: CPU
+          value: "3"
+        - name: LOAD
+          value: "50"
+        - name: TIMEOUT
+          value: "30"
+        - name: SLEEP
+          value: "1"
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+  name: stress
+spec:
+  maxReplicas: 10
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: stress
+  targetCPUUtilizationPercentage: 50
